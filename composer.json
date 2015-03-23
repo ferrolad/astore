@@ -1,5 +1,5 @@
 {
-    "name": "Insfires/astore-amazon",
+    "name": "insfires/astore-amazon",
     "description": "Simple Way to get amazon product details from astore",
     "authors": [
         {
@@ -16,5 +16,5 @@
             "Insfires\\AstoreAmazon": "src/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev"
 }
