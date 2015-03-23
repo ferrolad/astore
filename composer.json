@@ -1,0 +1,20 @@
+{
+    "name": "insfires/astore-amazon",
+    "description": "Simple Way to get amazon product details from astore",
+    "authors": [
+        {
+            "name": "Pijar Inspirator",
+            "email": "insfires.dev@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "4.2.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Insfires\\AstoreAmazon": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
