@@ -7,7 +7,95 @@ class AStore{
         $this->tld = $tld;
         $this->tid = $tid;
     }
-
+    
+    public function getLists($url,$page=1){
+		$urlContents = $url.'&page='.$page;
+		$htmls = $this->zm_get_source($urlContents);
+        $htmls = $this->str_get_html($htmls);
+		$results = array();
+		if($htmls->find('tr.imagerow') != false){
+            $list = $htmls->find('tr.imagerow');
+			$i=0;
+            foreach($list as $li){
+                foreach($li->find('img') as $image){
+					$imagess = str_replace(array('._SL75_.','jpg','png','http://ecx.images-amazon.com/images/I/'),'',$image->src);
+					if(strlen($imagess)>15) $results[$i]['image'] = 'no-image'; else $results[$i]['image'] = $imagess;
+					$i++;
+				}
+            }
+        }
+		if($htmls->find('tr.textrow') != false){
+            $list = $htmls->find('tr.textrow');
+			$ii = 0;
+			$iii = 0;
+            foreach($list as $li){
+                foreach($li->find('a') as $a){
+					$results[$ii]['title'] = $a->plaintext;
+					$asins = $this->lz_cutter($a->href,'detail/','/');
+					$results[$ii]['asin'] = $asins;
+					$ii++;
+				}
+				foreach($li->find('span.price') as $price){
+					$results[$iii]['price'] = $price->plaintext;
+					$iii++;
+				}
+            }
+        }
+		return $results;
+		
+	}
+	
+	public function search($url,$keyword=null,$page=1){
+		if($keyword == null) return false;
+		$urls = explode('?',$url);
+		parse_str($urls[1]);
+		$urlContents = $urls[0].'/search?node='.$node.'&keywords='.urlencode($keyword).'&page='.$page;
+		$htmls = $this->zm_get_source($urlContents);
+        $htmls = $this->str_get_html($htmls);
+		$results = array();
+		$i=0;
+		$previous = false;
+		$next = false;
+		if($htmls->find('tr.clsOdd') != false){
+            $list = $htmls->find('tr.clsOdd');
+            foreach($list as $li){
+				$image = str_replace(array('._SL75_.','jpg','png','http://ecx.images-amazon.com/images/I/'),'',$li->find('img',0)->src);
+				if(strlen($image)>15) $results[$i]['image'] = 'no-image'; else $results[$i]['image'] = $image;
+				$a = $li->find('td.tddescription a',0);
+				$results[$i]['title'] = $a->plaintext;
+				$span = $li->find('td.tddescription span.availability',0)->plaintext;
+				$results[$i]['availability'] = $span;
+				$results[$i]['price'] = str_replace(array($a->plaintext,$span),'',$li->find('td.tddescription',0)->plaintext);
+				$results[$i]['asin'] = $this->lz_cutter($a->href,'detail/','/');
+				$i++;
+            }
+        }
+		if($htmls->find('tr.clsEven') != false){
+            $list = $htmls->find('tr.clsEven');
+            foreach($list as $li){
+				$image = str_replace(array('._SL75_.','jpg','png','http://ecx.images-amazon.com/images/I/'),'',$li->find('img',0)->src);
+				if(strlen($image)>15) $results[$i]['image'] = 'no-image'; else $results[$i]['image'] = $image;
+				$a = $li->find('td.tddescription a',0);
+				$results[$i]['title'] = $a->plaintext;
+				$results[$i]['price'] = str_replace($a->plaintext,'',$li->find('td.tddescription',0)->plaintext);
+				$results[$i]['asin'] = $this->lz_cutter($a->href,'detail/','/');
+				$i++;
+            }
+        }
+		
+		if($htmls->find('tr.pagination') != false){
+            $a = $htmls->find('tr.pagination td a');
+            if(strpos($a[0]->plaintext,'&lt;') !== false) $previous = true;
+			if(strpos(end($a)->plaintext,'&gt;') !== false) $next = true;
+        }
+		return array(
+				'products' 	=> $results,
+				'previous' 	=> $previous,
+				'next' 		=> $next
+			);
+		
+	}
+	
     public function get($asin){
         $urlContents = 'http://astore.amazon'.$this->tld.'/'.$this->tid.'/detail/'.$asin.'/';
 
