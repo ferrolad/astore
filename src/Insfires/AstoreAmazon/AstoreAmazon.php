@@ -45,6 +45,7 @@ class AStore{
 		
 	}
 	
+	
 	public function search($url,$keyword=null,$page=1){
 		if($keyword == null) return false;
 		$urls = explode('?',$url);
